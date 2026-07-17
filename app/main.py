@@ -1,3 +1,5 @@
+from sqlite3 import connect
+from botocore.config import Config
 from typing import TYPE_CHECKING
 
 from aws_lambda_powertools import Logger, Metrics
@@ -25,7 +27,8 @@ def record_handler(record: SQSRecord) -> None:
     s3_event = S3Event(payload)
     logger.info("Received S3 event", extra={"bucket_name": s3_event.bucket_name, "object_key": s3_event.object_key})
 
-    s3_client = boto3.client("s3")
+    config = Config(connect_timeout=5, read_timeout=10)
+    s3_client = boto3.client("s3", config=config)
     try:
         response = s3_client.get_object(Bucket=s3_event.bucket_name, Key=s3_event.object_key)
         file_content = response["Body"].read()
