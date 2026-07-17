@@ -30,7 +30,7 @@ jobs:
       - id: vars
         run: |
           echo "project_name=${{ env.PROJECT_NAME }}" >> "$GITHUB_OUTPUT"
-          echo "bucket_name=${{ env.INPUT_BUCKET_NAME }}" >> "$GITHUB_OUTPUT"
+          echo "input_bucket_name=${{ env.INPUT_BUCKET_NAME }}" >> "$GITHUB_OUTPUT"
 
   sonarqube:
     name: SonarQube
