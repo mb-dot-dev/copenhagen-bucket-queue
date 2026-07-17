@@ -1,9 +1,9 @@
 from __future__ import annotations
-import pytest
 
 from unittest.mock import MagicMock, patch
 
 from aws_lambda_powertools.metrics import MetricUnit
+import pytest
 
 from app.main import record_handler
 
