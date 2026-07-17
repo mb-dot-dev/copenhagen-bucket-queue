@@ -1,5 +1,3 @@
-from sqlite3 import connect
-from botocore.config import Config
 from typing import TYPE_CHECKING
 
 from aws_lambda_powertools import Logger, Metrics
@@ -11,6 +9,7 @@ from aws_lambda_powertools.utilities.batch import (
 )
 from aws_lambda_powertools.utilities.data_classes import S3Event
 import boto3
+from botocore.config import Config
 
 if TYPE_CHECKING:
     from aws_lambda_powertools.utilities.batch.types import PartialItemFailureResponse
