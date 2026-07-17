@@ -13,7 +13,7 @@ concurrency:
 
 env:
   PROJECT_NAME: copenhagen
-  BUCKET_NAME: molnarbence-prod-copenhagen
+  INPUT_BUCKET_NAME: molnarbence-prod-copenhagen-input
 
 permissions:
   id-token: write # REQUIRED for OIDC
@@ -25,12 +25,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       project_name: ${{ steps.vars.outputs.project_name }}
-      bucket_name: ${{ steps.vars.outputs.bucket_name }}
+      input_bucket_name: ${{ steps.vars.outputs.input_bucket_name }}
     steps:
       - id: vars
         run: |
           echo "project_name=${{ env.PROJECT_NAME }}" >> "$GITHUB_OUTPUT"
-          echo "bucket_name=${{ env.BUCKET_NAME }}" >> "$GITHUB_OUTPUT"
+          echo "bucket_name=${{ env.INPUT_BUCKET_NAME }}" >> "$GITHUB_OUTPUT"
 
   sonarqube:
     name: SonarQube
@@ -112,3 +112,19 @@ jobs:
       project: ${{ needs.prepare.outputs.project_name }}
       parameter-overrides: >-
         ProjectName=${{ needs.prepare.outputs.project_name }}
+
+  deploy-sqs:
+    name: Deploy SQS Queue
+    needs:
+      - prepare
+      - cfn-lint
+    uses: mb-dot-dev/reusable-workflows/.github/workflows/deploy-cloudformation.yaml@main
+    secrets: inherit
+    with:
+      stack-name: ${{ needs.prepare.outputs.project_name }}-sqs
+      template: aws/sqs.yml
+      parameter-overrides: >-
+        ProjectName=${{ needs.prepare.outputs.project_name }},
+        QueueName=${{ needs.prepare.outputs.project_name }}-s3-events,
+        BucketName=${{ needs.prepare.outputs.input_bucket_name }}
+      project: ${{ needs.prepare.outputs.project_name }}
