@@ -123,8 +123,24 @@ jobs:
     with:
       stack-name: ${{ needs.prepare.outputs.project_name }}-sqs
       template: aws/sqs.yml
+      project: ${{ needs.prepare.outputs.project_name }}
       parameter-overrides: >-
         ProjectName=${{ needs.prepare.outputs.project_name }},
         QueueName=${{ needs.prepare.outputs.project_name }}-s3-events,
         BucketName=${{ needs.prepare.outputs.input_bucket_name }}
+
+  deploy-s3:
+    name: Deploy S3 Bucket
+    needs:
+      - prepare
+      - deploy-sqs
+    uses: mb-dot-dev/reusable-workflows/.github/workflows/deploy-cloudformation.yaml@main
+    secrets: inherit
+    with:
+      stack-name: ${{ needs.prepare.outputs.project_name }}-input-bucket
+      template: aws/s3.yml
       project: ${{ needs.prepare.outputs.project_name }}
+      parameter-overrides: >-
+        ProjectName=${{ needs.prepare.outputs.project_name }},
+        BucketName=${{ needs.prepare.outputs.input_bucket_name }},
+        QueueArn=${{ fromJSON(needs.deploy-sqs.outputs.stack-outputs-json).QueueArn }}
