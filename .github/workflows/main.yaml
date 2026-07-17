@@ -160,3 +160,20 @@ jobs:
         ProjectName=${{ needs.prepare.outputs.project_name }},
         RoleName=${{ needs.prepare.outputs.project_name }}-consumer-lambda,
         QueueArn=${{ fromJSON(needs.deploy-sqs.outputs.stack-outputs-json).QueueArn }}
+  
+  deploy-s3-bucket-policy:
+    name: Deploy S3 Bucket Policy
+    needs:
+      - prepare
+      - deploy-s3
+      - deploy-iam-role
+    uses: mb-dot-dev/reusable-workflows/.github/workflows/deploy-cloudformation.yaml@main
+    secrets: inherit
+    with:
+      stack-name: ${{ needs.prepare.outputs.project_name }}-input-bucket-policy
+      template: aws/s3-bucket-policy.yml
+      project: ${{ needs.prepare.outputs.project_name }}
+      parameter-overrides: >-
+        BucketName=${{ needs.prepare.outputs.input_bucket_name }},
+        BucketArn=${{ fromJSON(needs.deploy-s3.outputs.stack-outputs-json).BucketArn }},
+        LambdaExecutionRoleArn=${{ fromJSON(needs.deploy-iam-role.outputs.stack-outputs-json).LambdaExecutionRoleArn }}
