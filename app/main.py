@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 processor = BatchProcessor(event_type=EventType.SQS)
 logger = Logger()
-metrics = Metrics()
+metrics = Metrics(namespace="copenhagen")
 
 
 def record_handler(record: SQSRecord) -> None:
