@@ -1,0 +1,54 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 bucket that emits events to SQS queue
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket (must be globally unique)
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: '^molnarbence-[a-z0-9.-]+$'
+    ConstraintDescription: Bucket name must start with 'molnarbence-', be lowercase, can contain numbers, dots, and hyphens, and must be between 3 and 63 characters long.
+  QueueArn:
+    Type: String
+    Description: ARN of the SQS queue to send events to
+
+Outputs:
+  BucketArn:
+    Description: ARN of the S3 bucket
+    Value: !GetAtt InputBucket.Arn
+
+Resources:
+  InputBucket:
+    UpdateReplacePolicy: 'Delete'
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: 'Delete'
+    Properties:
+      AbacStatus: 'Disabled'
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        BlockPublicAcls: true
+      BucketName: !Ref BucketName
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: 'BucketOwnerEnforced'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Queue: !Ref QueueArn
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Name
+          Value: !Ref BucketName

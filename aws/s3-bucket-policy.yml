@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: S3 bucket policy to allow Lambda function to read from the bucket
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket (must be globally unique)
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: '^molnarbence-[a-z0-9.-]+$'
+    ConstraintDescription: Bucket name must start with 'molnarbence-', be lowercase, can contain numbers, dots, and hyphens, and must be between 3 and 63 characters long.
+  BucketArn:
+    Type: String
+    Description: ARN of the S3 bucket
+  LambdaExecutionRoleArn:
+    Type: String
+    Description: ARN of the IAM role that the Lambda function will assume to access the S3 bucket
+
+Resources:
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BucketName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref LambdaExecutionRoleArn
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:ListBucket
+            Resource:
+              - !Ref BucketArn
+              - !Sub "${BucketArn}/*"

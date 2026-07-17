@@ -9,6 +9,7 @@ from aws_lambda_powertools.utilities.batch import (
 )
 from aws_lambda_powertools.utilities.data_classes import S3Event
 import boto3
+from botocore.config import Config
 
 if TYPE_CHECKING:
     from aws_lambda_powertools.utilities.batch.types import PartialItemFailureResponse
@@ -25,7 +26,8 @@ def record_handler(record: SQSRecord) -> None:
     s3_event = S3Event(payload)
     logger.info("Received S3 event", extra={"bucket_name": s3_event.bucket_name, "object_key": s3_event.object_key})
 
-    s3_client = boto3.client("s3")
+    config = Config(connect_timeout=5, read_timeout=10)
+    s3_client = boto3.client("s3", config=config)
     try:
         response = s3_client.get_object(Bucket=s3_event.bucket_name, Key=s3_event.object_key)
         file_content = response["Body"].read()

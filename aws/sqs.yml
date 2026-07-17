@@ -1,0 +1,63 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for SQS queue
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project
+  QueueName:
+    Type: String
+    Description: Name of the SQS queue
+    MinLength: 1
+    MaxLength: 80
+    AllowedPattern: ^[a-zA-Z0-9_-]+$
+    ConstraintDescription: Queue name must be alphanumeric, can contain hyphens and underscores
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket to send events from
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: '^molnarbence-[a-z0-9.-]+$'
+    ConstraintDescription: Bucket name must start with 'molnarbence-', be lowercase, can contain numbers, dots, and hyphens, and must be between 3 and 63 characters long.
+
+Outputs:
+  QueueArn:
+    Description: ARN of the SQS queue
+    Value: !GetAtt S3EventsQueue.Arn
+
+  QueueName:
+    Description: Name of the SQS queue
+    Value: !GetAtt S3EventsQueue.QueueName
+
+Resources:
+  S3EventsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref QueueName
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 300
+      ReceiveMessageWaitTimeSeconds: 0
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+        - Key: Name
+          Value: !Ref QueueName
+
+  S3EventsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref S3EventsQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowS3ToSendMessages
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt S3EventsQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub arn:aws:s3:::${BucketName}
