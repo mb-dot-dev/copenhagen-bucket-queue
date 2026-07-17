@@ -20,7 +20,7 @@ logger = Logger()
 metrics = Metrics(namespace="copenhagen")
 
 
-def record_handler(record: SQSRecord) -> None:
+def _record_handler(record: SQSRecord) -> None:
     payload: dict = record.json_body
     s3_event = S3Event(payload)
     logger.info("Received S3 event", extra={"bucket_name": s3_event.bucket_name, "object_key": s3_event.object_key})
@@ -46,7 +46,7 @@ def record_handler(record: SQSRecord) -> None:
 def lambda_handler(event: dict, context: LambdaContext) -> PartialItemFailureResponse:
     return process_partial_response(
         event=event,
-        record_handler=record_handler,
+        record_handler=_record_handler,
         processor=processor,
         context=context,
     )
