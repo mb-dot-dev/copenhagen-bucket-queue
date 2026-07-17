@@ -144,3 +144,19 @@ jobs:
         ProjectName=${{ needs.prepare.outputs.project_name }},
         BucketName=${{ needs.prepare.outputs.input_bucket_name }},
         QueueArn=${{ fromJSON(needs.deploy-sqs.outputs.stack-outputs-json).QueueArn }}
+
+  deploy-iam-role:
+    name: Deploy IAM Role
+    needs:
+      - prepare
+      - deploy-sqs
+    uses: mb-dot-dev/reusable-workflows/.github/workflows/deploy-cloudformation.yaml@main
+    secrets: inherit
+    with:
+      stack-name: ${{ needs.prepare.outputs.project_name }}-consumer-lambda-role
+      template: aws/consumer-lambda-role.yml
+      project: ${{ needs.prepare.outputs.project_name }}
+      parameter-overrides: >-
+        ProjectName=${{ needs.prepare.outputs.project_name }},
+        RoleName=${{ needs.prepare.outputs.project_name }}-consumer-lambda,
+        QueueArn=${{ fromJSON(needs.deploy-sqs.outputs.stack-outputs-json).QueueArn }}
