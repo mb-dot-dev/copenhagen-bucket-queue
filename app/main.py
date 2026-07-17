@@ -7,13 +7,12 @@ from aws_lambda_powertools.utilities.batch import (
     EventType,
     process_partial_response,
 )
-from aws_lambda_powertools.utilities.data_classes import S3Event
+from aws_lambda_powertools.utilities.data_classes import S3Event, SQSRecord
 import boto3
 from botocore.config import Config
 
 if TYPE_CHECKING:
     from aws_lambda_powertools.utilities.batch.types import PartialItemFailureResponse
-    from aws_lambda_powertools.utilities.data_classes import SQSRecord
     from aws_lambda_powertools.utilities.typing import LambdaContext
 
 processor = BatchProcessor(event_type=EventType.SQS)
