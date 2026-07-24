@@ -13,13 +13,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "aws-lambda-powertools[aws-sdk]>=3.31.1",
-    "cfn-lint>=1.52.1",
+    "cfn-lint>=1.53.2",
     "moto[s3,sqs]>=5.2.2",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "requests>=2.34.2",
-    "ruff>=0.15.20",
-    "ty>=0.0.56",
+    "ruff>=0.16.0",
+    "ty>=0.0.63",
 ]
 
 ##### TESTING #####
